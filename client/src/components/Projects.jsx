@@ -1,88 +1,39 @@
-import { useRef, useState, useCallback, useEffect, useId } from 'react'
+import { useRef, useState, useCallback, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { useGSAP } from '@gsap/react'
-import useTilt from '../hooks/useTilt'
-import { projects } from '../data/content'
+import { projects, profile } from '../data/content'
+import { ArrowUpRight } from './icons'
 
-gsap.registerPlugin(ScrollTrigger)
+const all = [...projects.web, ...projects.data]
+const github = profile.socials.find((s) => s.label === 'GitHub')?.href
 
-/* Generated abstract preview art — warm metallic gradients, zero image weight. */
-function Artwork({ tone, title }) {
-  /* useId keeps the gradient id unique. Previously the card and the open case
-     study both emitted `id="g3"`, so the browser had two live definitions
-     fighting over the same reference. */
-  const uid = useId().replace(/:/g, '')
-  const seeds = [
-    { a: '#c9a961', b: '#2a2117', r: 34 },
-    { a: '#d4af7a', b: '#1c1712', r: 58 },
-    { a: '#e8cf9a', b: '#241d13', r: 22 },
-    { a: '#a8874a', b: '#171310', r: 66 },
-    { a: '#c9a961', b: '#201a11', r: 48 },
-    { a: '#d4af7a', b: '#26200f', r: 30 },
-  ]
-  const s = seeds[tone % seeds.length]
-  const id = `g${tone}-${uid}`
+function ProjectImage({ project, eager = false }) {
   return (
-    <svg
-      viewBox="0 0 400 260"
-      className="w-full h-full"
-      role="img"
-      aria-label={`${title} preview artwork`}
-      preserveAspectRatio="xMidYMid slice"
-    >
-      <defs>
-        <radialGradient id={id} cx={`${20 + s.r}%`} cy="30%" r="90%">
-          <stop offset="0%" stopColor={s.a} stopOpacity="0.9" />
-          <stop offset="55%" stopColor={s.b} />
-          <stop offset="100%" stopColor="#0a0a0a" />
-        </radialGradient>
-      </defs>
-      <rect width="400" height="260" fill={`url(#${id})`} />
-      <g stroke={s.a} strokeOpacity="0.25" fill="none">
-        {[...Array(7)].map((_, i) => (
-          <circle key={i} cx={300 - s.r} cy={80 + s.r / 2} r={18 + i * (14 + (tone % 3) * 4)} />
-        ))}
-      </g>
-      <rect x="24" y="210" width={90 + s.r} height="2" fill={s.a} fillOpacity="0.6" />
-    </svg>
+    <img
+      src={project.image}
+      alt={`${project.title} — illustrative project cover`}
+      width="900"
+      height="600"
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+      className="aspect-[3/2] w-full object-cover"
+    />
   )
 }
 
-function Card({ p, onOpen }) {
-  const tilt = useTilt(6)
+function Card({ project, onOpen }) {
   return (
-    <article ref={tilt} className="tilt proj-card group">
-      <button
-        type="button"
-        onClick={() => onOpen(p)}
-        data-cursor
-        className="block w-full text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-gold-500"
-        aria-label={`Open case study: ${p.title}`}
-      >
-        <div className="tilt-inner relative aspect-[4/3] overflow-hidden bg-ink-800 border border-ink-700 group-hover:border-gold-700 transition-colors duration-500">
-          <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-105">
-            <Artwork tone={p.tone} title={p.title} />
+    <article className="proj-card">
+      <button type="button" onClick={() => onOpen(project)} className="card card-hover group block h-full w-full p-2.5 text-left" aria-label={`Open case study: ${project.title}`}>
+        <div className="overflow-hidden rounded-[20px] border border-line bg-surface-soft">
+          <ProjectImage project={project} />
+        </div>
+        <div className="flex items-start justify-between gap-3 px-2.5 pb-2 pt-4">
+          <div>
+            <h3 className="font-display text-[19px] tracking-tightest text-ink-900">{project.title}</h3>
+            <p className="mt-1 text-[13px] text-ink-500">{project.kind}</p>
           </div>
-          {/* Was `backdrop-blur-sm`: a backdrop-filter forces its own render
-              surface and a readback of everything behind it. Six of them, each
-              inside a 3D-transformed card, is a lot of extra compositing for a
-              label. A solid chip looks the same and costs nothing. */}
-          <span className="absolute top-4 left-4 font-mono text-[10px] uppercase tracking-[0.25em] text-bone-300/80 bg-ink-950/85 px-3 py-1.5">
-            {p.kind}
-          </span>
-          <span className="absolute bottom-4 right-4 text-gold-400 text-sm opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
-            Case study →
-          </span>
+          <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-mint-50 text-mint-700"><ArrowUpRight /></span>
         </div>
-        <div className="tilt-inner mt-5 flex items-baseline justify-between gap-4">
-          <h4 className="font-display text-xl md:text-2xl tracking-tightest group-hover:text-gold-300 transition-colors duration-300">
-            {p.title}
-          </h4>
-          <span className="font-mono text-xs text-bone-500">{p.year}</span>
-        </div>
-        <p className="tilt-inner mt-2 text-sm text-bone-500 leading-relaxed">{p.summary}</p>
       </button>
     </article>
   )
@@ -93,168 +44,64 @@ function CaseStudy({ project, onClose }) {
 
   useEffect(() => {
     if (!project) return
-    window.lenis?.stop()
-    window.isProjectModalOpen = true
-    window.dispatchEvent(new Event('modal-toggle'))
-    document.body.classList.add('modal-open')
+    const dialog = ref.current
+    const trigger = document.activeElement
+    const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    document.documentElement.style.overflow = 'hidden'
-
-    const onKey = (e) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-
+    dialog.showModal()
     return () => {
-      window.lenis?.start()
-      window.isProjectModalOpen = false
-      window.dispatchEvent(new Event('modal-toggle'))
-      document.body.classList.remove('modal-open')
-      document.body.style.overflow = ''
-      document.documentElement.style.overflow = ''
-      window.removeEventListener('keydown', onKey)
+      dialog.close()
+      document.body.style.overflow = previousOverflow
+      trigger?.focus({ preventScroll: true })
     }
-  }, [project, onClose])
-
-  useGSAP(
-    () => {
-      if (!project || !ref.current) return
-      const el = ref.current
-      el.style.willChange = 'transform, opacity'
-      gsap.fromTo(
-        el,
-        { yPercent: 6, opacity: 0 },
-        {
-          yPercent: 0,
-          opacity: 1,
-          duration: 0.5,
-          ease: 'power3.out',
-          onComplete: () => {
-            el.style.willChange = ''
-          },
-        }
-      )
-    },
-    { scope: ref, dependencies: [project?.id] }
-  )
+  }, [project])
 
   if (!project) return null
 
-  /* Rendered into <body> via a portal so it is never affected by the
-     containment/stacking context of the Projects section, and so it paints
-     above the grain overlay instead of underneath it. */
   return createPortal(
-    <div
-      /* `backdrop-blur-md` across the full viewport was the single biggest
-         cost on this screen: backdrop-filter re-reads and Gaussian-blurs
-         every pixel behind the overlay, every frame, and the pixel count
-         quadruples going from a half-window to a maximised 1440p display.
-         A near-opaque panel gives the same "content recedes" read for free. */
-      className="fixed inset-0 z-[110] bg-ink-950/95 overflow-y-auto overscroll-contain"
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${project.title} case study`}
-      onClick={onClose}
-      data-lenis-prevent
-    >
-      <div
-        ref={ref}
-        onClick={(e) => e.stopPropagation()}
-        className="max-w-3xl mx-auto my-16 md:my-24 bg-ink-900 border border-ink-700 shadow-[0_40px_120px_-20px_rgba(0,0,0,0.9)]"
-      >
-        <div className="aspect-[16/7] overflow-hidden border-b border-ink-700">
-          <Artwork tone={project.tone} title={project.title} />
-        </div>
-        <div className="p-8 md:p-12">
-          <p className="eyebrow">{project.kind} · {project.year}</p>
-          <h3 className="mt-4 font-display text-3xl md:text-4xl tracking-tightest">
-            {project.title}
-          </h3>
-          <p className="mt-6 text-bone-300 leading-relaxed">{project.summary}</p>
-          <p className="mt-4 text-bone-500 leading-relaxed">{project.detail}</p>
-          <ul className="mt-8 flex flex-wrap gap-2">
-            {project.tech.map((t) => (
-              <li
-                key={t}
-                className="font-mono text-[11px] uppercase tracking-widest text-gold-400 border border-gold-700/60 px-3 py-1.5"
-              >
-                {t}
-              </li>
-            ))}
-          </ul>
-          <button
-            type="button"
-            onClick={onClose}
-            className="mt-10 text-sm uppercase tracking-[0.25em] text-bone-300 hover:text-gold-400 transition-colors"
-          >
-            ← Close
+    <dialog ref={ref} aria-labelledby="case-study-title" onCancel={onClose} onClick={(event) => { if (event.target === event.currentTarget) onClose() }} className="project-dialog">
+      <div className="overflow-hidden rounded-[28px] bg-white" onClick={(event) => event.stopPropagation()}>
+        <div className="relative border-b border-line bg-surface-soft p-2.5">
+          <div className="overflow-hidden rounded-[20px]"><ProjectImage project={project} eager /></div>
+          <button type="button" autoFocus onClick={onClose} className="absolute right-5 top-5 grid h-10 w-10 place-items-center rounded-full border border-line bg-white text-ink-700 hover:bg-mint-50" aria-label="Close case study">
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
           </button>
         </div>
+        <div className="p-6 sm:p-10">
+          <div className="flex flex-wrap items-center gap-2"><span className="pill">{project.kind}</span><span className="pill bg-surface-tint text-ink-600">{project.year}</span></div>
+          <h3 id="case-study-title" className="mt-5 font-display text-3xl tracking-tightest text-ink-900 sm:text-4xl">{project.title}</h3>
+          <p className="mt-5 text-[17px] leading-relaxed text-ink-700">{project.summary}</p>
+          <p className="mt-4 leading-relaxed text-ink-500">{project.detail}</p>
+          <ul className="mt-8 flex flex-wrap gap-2">{project.tech.map((item) => <li key={item} className="rounded-full border border-line bg-surface-soft px-3.5 py-1.5 text-[13px] text-ink-600">{item}</li>)}</ul>
+          <div className="mt-9 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6">
+            <button type="button" onClick={onClose} className="link-arrow">← Back to projects</button>
+            {project.liveUrl ? (
+              <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="hero-button hero-button-primary">Visit Site <ArrowUpRight /></a>
+            ) : (
+              <div className="text-right"><button type="button" disabled className="hero-button cursor-not-allowed bg-surface-tint text-ink-500">Visit Site <ArrowUpRight /></button><p className="mt-2 text-xs text-ink-500">Live preview coming soon</p></div>
+            )}
+          </div>
+        </div>
       </div>
-    </div>,
+    </dialog>,
     document.body
   )
 }
 
-function Row({ label, items, onOpen }) {
-  return (
-    <div className="proj-row mt-16 first:mt-0">
-      <div className="flex items-center gap-6 mb-10">
-        <h3 className="font-display text-xl md:text-2xl tracking-tightest text-bone-300">
-          {label}
-        </h3>
-        <span className="rule flex-1" />
-        <span className="font-mono text-xs text-gold-600">{items.length} projects</span>
-      </div>
-      <div className="grid md:grid-cols-3 gap-8 md:gap-10">
-        {items.map((p) => (
-          <Card key={p.id} p={p} onOpen={onOpen} />
-        ))}
-      </div>
-    </div>
-  )
-}
-
 export default function Projects() {
-  const root = useRef(null)
   const [active, setActive] = useState(null)
-  const open = useCallback((p) => setActive(p), [])
   const close = useCallback(() => setActive(null), [])
-
-  useGSAP(
-    () => {
-      gsap.utils.toArray('.proj-row').forEach((row) => {
-        const cards = row.querySelectorAll('.proj-card')
-        gsap.from(cards, {
-          opacity: 0,
-          y: 60,
-          duration: 0.9,
-          ease: 'power3.out',
-          stagger: 0.12,
-          scrollTrigger: { trigger: row, start: 'top 78%' },
-          onStart: () => cards.forEach((c) => (c.style.willChange = 'transform, opacity')),
-          onComplete: () => cards.forEach((c) => (c.style.willChange = '')),
-        })
-      })
-    },
-    { scope: root }
-  )
-
   return (
-    <section id="work" ref={root} className="section-pad">
-      <div className="grid md:grid-cols-12 gap-10 mb-20">
-        <div className="md:col-span-3">
-          <p className="eyebrow">Selected work</p>
+    <section id="work" className="section-pad bg-white">
+      <div className="shell">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h2 className="text-xl font-bold tracking-tight text-ink-900">Featured Projects</h2>
+          <a href={github} target="_blank" rel="noopener noreferrer" className="link-arrow">View All Projects <ArrowUpRight /></a>
         </div>
-        <div className="md:col-span-9">
-          <h2 className="font-display font-medium tracking-tightest text-3xl md:text-5xl max-w-3xl">
-            Products on the surface, models underneath
-            <span className="text-gold-500">.</span>
-          </h2>
+        <div className="proj-grid mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {all.map((project) => <Card key={project.id} project={project} onOpen={setActive} />)}
         </div>
       </div>
-      <Row label="Web — MERN platforms" items={projects.web} onOpen={open} />
-      <Row label="Data — ML & analytics" items={projects.data} onOpen={open} />
       <CaseStudy project={active} onClose={close} />
     </section>
   )

@@ -1,10 +1,10 @@
 /* All copy and content in one place so the site is easy to make your own. */
 
 export const profile = {
-  name: "Rana Muhammad Usman",
+  name: "UsamaNasir",
   role: "Full-Stack Engineer × Data Scientist",
   tagline: "I build production web systems and the models behind them.",
-  email: "dev.ranausman@gmail.com",
+  email: "official.starkdev@gmail.com",
   location: "Lahore, PK — working worldwide",
   socials: [
     { label: "GitHub", href: "https://github.com/" },
@@ -15,9 +15,9 @@ export const profile = {
 };
 
 export const stats = [
-  { value: 6, suffix: "+", label: "Years shipping" },
-  { value: 40, suffix: "+", label: "Projects delivered" },
-  { value: 12, suffix: "", label: "ML models in production" },
+  { value: 2, suffix: "+", label: "Years shipping" },
+  { value: 20, suffix: "+", label: "Projects delivered" },
+  { value: 7, suffix: "", label: "ML models in production" },
   { value: 99.9, suffix: "%", label: "Avg. uptime maintained", decimals: 1 },
 ];
 
@@ -48,48 +48,102 @@ export const skills = {
   },
 };
 
+export const getImageUrl = (folder, imageName) => {
+  if (!folder || !imageName) return ''
+  const cleanFolder = folder.replace(/^\//, '').replace(/\/$/, '')
+  const encodedFolder = cleanFolder
+    .split('/')
+    .map((seg) => encodeURIComponent(seg))
+    .join('/')
+  const encodedImage = encodeURIComponent(imageName)
+  return `/${encodedFolder}/${encodedImage}`
+}
+
 export const projects = {
   web: [
     {
       id: "w1",
-      title: "Meridian Commerce",
-      kind: "MERN · Headless storefront",
+      image: "/images/project-fashion.jpg",
+      title: "Trueman Sailor",
+      kind: "MERN · APPOINTMENT BOOKING PLATFORM",
       year: "2025",
+      liveUrl: "https://trueman-sailor.vercel.app/",
+      folder: "/trueman",
+      defaultImage: "Main.png",
+      images: [
+        "Main.png",
+        "Screenshot 2026-08-18 003044.png",
+        "Screenshot 2026-08-18 003102.png",
+        "Screenshot 2026-08-18 003132.png",
+        "Screenshot 2026-08-18 003152.png",
+        "Screenshot 2026-08-18 003200.png",
+        "Screenshot 2026-08-18 003209.png",
+        "Screenshot 2026-08-18 003227.png",
+        "Screenshot 2026-08-18 003501.png",
+        "Screenshot 2026-08-18 003514.png",
+      ],
       summary:
-        "A headless e-commerce platform serving 120k monthly sessions. React storefront, Express API layer, MongoDB catalog with sub-40ms p95 queries.",
+        "Full-stack MERN clothing & fashion e-commerce storefront with dynamic catalog browsing, interactive cart, and responsive UI.",
       detail:
-        "Built the full stack: schema design with compound indexes, Redis-backed cart sessions, Stripe billing, and an admin dashboard with role-based access. Lighthouse performance 98 on the storefront after image pipeline and route-level code splitting.",
-      tech: ["React", "Express", "MongoDB", "Redis", "Stripe"],
+        "Trueman Sailor is a modern fashion e-commerce web application built on the MERN stack. Features comprehensive product showcases, seamless navigation, responsive design for all screen sizes, and optimized asset delivery.",
+      tech: ["React", "Express", "Node.js", "MongoDB", "Tailwind CSS"],
       tone: 0,
     },
     {
       id: "w2",
-      title: "Atlas Realtime Board",
-      kind: "MERN · Collaboration tool",
-      year: "2024",
+      image: "/images/project-food.jpg",
+      title: "Zaiqa",
+      kind: "MERN · Food Ordering Platform",
+      year: "2025",
+      liveUrl: "https://zaiqa-u3wl.onrender.com/",
+      folder: "/zaiqa",
+      defaultImage: "Main.png",
+      images: [
+        "Main.png",
+        "Screenshot 2026-08-18 001834.png",
+        "Screenshot 2026-08-18 001851.png",
+        "Screenshot 2026-08-18 002204.png",
+        "Screenshot 2026-08-18 002221.png",
+        "Screenshot 2026-08-18 002243.png",
+        "Screenshot 2026-08-18 002330.png",
+        "Screenshot 2026-08-18 002408.png",
+        "Screenshot 2026-08-18 002418.png",
+        "Screenshot 2026-08-18 002429.png",
+      ],
       summary:
-        "A multiplayer kanban with live cursors and presence — WebSocket sync over Socket.IO with optimistic UI and conflict-free updates.",
+        "Feature-rich culinary & restaurant ordering platform with interactive menus, order processing, and dynamic food category filtering.",
       detail:
-        "Designed an operation-log sync model so concurrent edits never clobber each other. Presence, typing indicators, and drag-and-drop all reconcile through a single event stream persisted to MongoDB change streams.",
-      tech: ["React", "Socket.IO", "Node.js", "MongoDB"],
+        "Zaiqa provides a full-featured online food ordering experience. Built with MongoDB, Express, React, and Node.js, it offers smooth item filtering, real-time cart updates, and a responsive interface designed for culinary businesses.",
+      tech: ["React", "Express", "Node.js", "MongoDB", "REST API"],
       tone: 1,
     },
     {
       id: "w3",
-      title: "Ledgerline",
-      kind: "MERN · Fintech dashboard",
-      year: "2024",
+      image: "/images/project-property.jpg",
+      title: "Real State Agent",
+      kind: "MERN · Real Estate Portal",
+      year: "2025",
+      liveUrl: "https://real-state-agent-b1mc.onrender.com/",
+      folder: "/real-state agent",
+      defaultImage: "Main.png",
+      images: [
+        "Main.png",
+        "Screenshot 2026-08-18 001102.png",
+        "Screenshot 2026-08-18 001145.png",
+        "real-state-agent-b1mc.onrender.com_contact.png",
+      ],
       summary:
-        "Invoice and cash-flow dashboard for freelancers: recurring billing, PDF generation, and bank-grade audit trails.",
+        "Real estate web platform enabling clients to explore property listings, filter by criteria, and connect with property agents directly.",
       detail:
-        "JWT auth with refresh rotation, server-side PDF rendering, and an append-only ledger collection for auditability. Deployed with zero-downtime rolling releases on a two-node cluster.",
-      tech: ["React", "Express", "Mongoose", "JWT", "Puppeteer"],
+        "Real State Agent is a full-stack property management and real estate portal. Built using the MERN stack, it includes property listing management, agent contact integration, detailed property cards, and location-based filtering.",
+      tech: ["React", "Express", "Node.js", "MongoDB", "Tailwind CSS"],
       tone: 2,
     },
   ],
   data: [
     {
       id: "d1",
+      image: "/images/project-analytics.jpg",
       title: "Churn Horizon",
       kind: "ML · Customer retention",
       year: "2025",
@@ -102,6 +156,7 @@ export const projects = {
     },
     {
       id: "d2",
+      image: "/images/project-freight.jpg",
       title: "Freightcast",
       kind: "ML · Demand forecasting",
       year: "2024",
@@ -114,6 +169,7 @@ export const projects = {
     },
     {
       id: "d3",
+      image: "/images/project-workspace.jpg",
       title: "Signal & Noise",
       kind: "NLP · Review intelligence",
       year: "2023",
@@ -147,8 +203,8 @@ export const timeline = [
     text: "Shipped client platforms on the MERN stack — e-commerce, dashboards, and realtime tools — with a focus on performance budgets.",
   },
   {
-    period: "2019",
-    role: "B.Sc. Computer Science",
+    period: "2024",
+    role: "BS Computer Science",
     org: "Graduated with distinction",
     text: "Thesis on applied machine learning for time-series problems. Fell for the overlap of interfaces and inference; never looked back.",
   },

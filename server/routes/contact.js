@@ -15,7 +15,7 @@ const limiter = rateLimit({
 })
 
 /* Optional email notification if SMTP env vars are set. */
-async function notifyByEmail({ name, email, message }) {
+async function notifyByEmail({ name, email, projectType, message }) {
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, MAIL_TO } = process.env
   if (!SMTP_HOST || !MAIL_TO) return
   const transporter = nodemailer.createTransport({
@@ -29,21 +29,21 @@ async function notifyByEmail({ name, email, message }) {
     to: MAIL_TO,
     replyTo: email,
     subject: `Portfolio contact — ${name}`,
-    text: `From: ${name} <${email}>\n\n${message}`,
+    text: `From: ${name} <${email}>\nProject: ${projectType || '—'}\n\n${message}`,
   })
 }
 
 router.post('/', limiter, async (req, res) => {
   try {
-    const { name, email, message } = req.body || {}
+    const { name, email, projectType, message } = req.body || {}
     if (!name?.trim() || !email?.trim() || !message?.trim()) {
       return res.status(400).json({ error: 'Name, email, and message are all required.' })
     }
     if (mongoose.connection.readyState !== 1) {
       return res.status(503).json({ error: 'Message storage is offline right now.' })
     }
-    const saved = await Message.create({ name, email, message })
-    notifyByEmail({ name, email, message }).catch((err) =>
+    const saved = await Message.create({ name, email, projectType, message })
+    notifyByEmail({ name, email, projectType, message }).catch((err) =>
       console.error('Email notify failed:', err.message)
     )
     return res.status(201).json({ ok: true, id: saved._id })

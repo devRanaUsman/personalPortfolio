@@ -3,161 +3,66 @@
 @tailwind utilities;
 
 :root {
-  --ink: #0a0a0a;
-  --ink-2: #121212;
-  --gold: #c9a961;
-  --gold-soft: #d4af7a;
-  --bone: #f2ede4;
+  --surface: #ffffff;
+  --surface-soft: #f6fbf9;
+  --surface-tint: #eaf6f2;
+  --line: #e4eeeb;
+  --ink: #0a1d19;
+  --mint: #167663;
+  --mint-soft: #c2ebdf;
 }
 
 html {
-  background: var(--ink);
+  background: var(--surface);
   scrollbar-width: thin;
-  scrollbar-color: #2a2a2a transparent;
+  scrollbar-color: #c2ebdf transparent;
 }
 
-html.lenis,
-html.lenis body {
-  height: auto;
-}
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-.lenis.lenis-stopped {
-  overflow: hidden;
-}
+
 
 body {
-  @apply bg-ink-950 text-bone-100 font-body antialiased;
+  @apply bg-surface text-ink-900 font-body antialiased;
   overflow-x: hidden;
 }
 
 ::selection {
-  background: #c9a961;
-  color: #0a0a0a;
+  background: #c2ebdf;
+  color: #0a1d19;
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
-  border-radius: 3px;
+  background: #cfe7e0;
+  border-radius: 4px;
+}
+
+/* Focus rings are always visible, never removed for looks. */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid #1f9278;
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 /* ------------------------------------------------------------------
-   Grain / noise overlay
-   The old version was `inset: -100%` (a 3x3 = 9x viewport layer) with an
-   SVG that had no intrinsic size, so the browser rasterised feTurbulence
-   at the FULL layer size. At 2560x1440 that is a 7680x4320 noise bitmap
-   regenerated on every resize — the single biggest fullscreen cost.
-
-   Now: a fixed 120px margin (not a percentage), the noise tiles at a
-   fixed 160px, and the drift animation stays inside that margin. The
-   bitmap is rasterised once at 160x160 no matter the screen size.
+   Layout rhythm
 ------------------------------------------------------------------- */
-.grain::after {
-  content: '';
-  position: fixed;
-  inset: -120px;
-  z-index: 70;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 160px 160px;
-  opacity: 0.05;
-  animation: grain 8s steps(10) infinite;
-  transform: translate3d(0, 0, 0);
-  contain: layout paint style;
+.shell {
+  @apply mx-auto w-full max-w-[1240px] px-5 sm:px-8 lg:px-10;
 }
-
-/* Pixel-based drift (stays within the 120px bleed, so no seams) */
-@keyframes grain {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  10% { transform: translate3d(-16px, -32px, 0); }
-  20% { transform: translate3d(-48px, 16px, 0); }
-  30% { transform: translate3d(22px, -80px, 0); }
-  40% { transform: translate3d(-16px, 80px, 0); }
-  50% { transform: translate3d(-48px, 32px, 0); }
-  60% { transform: translate3d(48px, 0, 0); }
-  70% { transform: translate3d(0, 48px, 0); }
-  80% { transform: translate3d(10px, 100px, 0); }
-  90% { transform: translate3d(-32px, 32px, 0); }
-}
-
-/* Freeze the grain while a modal is open — nothing is gained by animating
-   a layer the user can barely see, and it keeps the modal buttery. */
-body.modal-open .grain::after {
-  animation-play-state: paused;
-}
-
-/* ---- type helpers ---- */
-.display-hairline {
-  -webkit-text-stroke: 1px rgba(242, 237, 228, 0.35);
-  color: transparent;
-}
-.split-line {
-  display: block;
-  overflow: hidden;
-}
-/* NOTE: no `will-change` here on purpose. These selectors can match several
-   hundred nodes at once (every character of the hero + contact headings);
-   promoting all of them permanently blew up GPU layer memory and was a main
-   cause of the fullscreen stutter. GSAP now sets/clears will-change per
-   tween instead (see splitText helper usage). */
-.split-word,
-.split-char {
-  display: inline-block;
-}
-
-/* ---- section rhythm ---- */
 .section-pad {
-  @apply px-6 md:px-12 lg:px-24 py-28 md:py-40;
+  @apply py-20 md:py-28;
 }
+/* Accent text is mint-700, not mint-600: at 15px on white, 600 lands at
+   ~3.9:1 and misses WCAG AA for small text. */
 .eyebrow {
-  @apply font-mono text-[11px] uppercase tracking-[0.35em] text-gold-500;
+  @apply text-[15px] font-medium text-mint-700;
 }
-.rule {
-  @apply h-px w-full bg-ink-700;
-}
-
-/* ---- inputs ---- */
-.field {
-  @apply relative;
-}
-.field input,
-.field textarea {
-  @apply w-full bg-transparent border-0 border-b border-ink-700 py-4 text-bone-100
-    placeholder-transparent outline-none transition-colors duration-300;
-}
-.field label {
-  @apply absolute left-0 top-4 text-bone-500 pointer-events-none origin-left
-    transition-transform duration-300 ease-out;
-}
-.field input:focus + label,
-.field input:not(:placeholder-shown) + label,
-.field textarea:focus + label,
-.field textarea:not(:placeholder-shown) + label {
-  transform: translateY(-1.6rem) scale(0.72);
-  color: var(--gold);
-}
-.field .field-line {
-  @apply absolute bottom-0 left-0 h-px w-full bg-gold-500 origin-left scale-x-0
-    transition-transform duration-500 ease-out;
-}
-.field input:focus ~ .field-line,
-.field textarea:focus ~ .field-line {
-  transform: scaleX(1);
-}
-
-/* ---- tilt cards ----
-   `will-change` is toggled by the useTilt hook only while the pointer is
-   actually over the card, so idle cards cost nothing. */
-.tilt {
-  transform-style: preserve-3d;
-}
-.tilt-inner {
-  transform: translateZ(30px);
+/* Clash Display runs narrow, so display headings get a little positive
+   word-space to survive the negative tracking. */
+.font-display {
+  word-spacing: 0.08em;
 }
 
 /* Sections are isolated from each other for layout/paint so a change in one
@@ -166,11 +71,214 @@ main > section {
   contain: layout style;
 }
 
+/* ------------------------------------------------------------------
+   Surfaces — the "double bezel": an outer shell with a hairline and a
+   padded tray, and an inner core with its own background and softer radius.
+------------------------------------------------------------------- */
+.shell-card {
+  @apply rounded-[32px] border border-line bg-surface-soft p-1.5 sm:p-2;
+}
+.card {
+  @apply rounded-[26px] border border-line bg-white shadow-soft;
+}
+.card-hover {
+  @apply transition-[transform,box-shadow,border-color] duration-700 ease-fluid
+    hover:-translate-y-1.5 hover:border-mint-200 hover:shadow-lift;
+}
+.icon-chip {
+  @apply grid h-11 w-11 shrink-0 place-items-center rounded-[14px] bg-mint-100 text-mint-700
+    shadow-inset;
+}
+.pill {
+  @apply inline-flex items-center gap-1.5 rounded-full bg-mint-100 px-3.5 py-1.5
+    text-[13px] font-medium text-mint-700;
+}
+
+/* ------------------------------------------------------------------
+   Buttons — pills with a nested icon circle (button-in-button).
+------------------------------------------------------------------- */
+/* Base pill + modifiers. Kept as separate classes (rather than nesting one
+   @apply inside another) so the cascade stays obvious: base first, then the
+   modifier's own utilities, which land later in the components layer. */
+.btn {
+  @apply inline-flex items-center gap-3 rounded-full pl-6 pr-2 py-2 text-[15px] font-medium
+    transition-[background-color,border-color,color,transform,box-shadow] duration-500 ease-fluid
+    active:scale-[0.98];
+}
+.btn-primary {
+  @apply bg-mint-700 text-white shadow-soft hover:bg-mint-800 hover:shadow-lift;
+}
+.btn-ghost {
+  @apply border border-line bg-white text-ink-900 hover:border-mint-300 hover:bg-mint-50;
+}
+.btn-icon {
+  @apply grid h-9 w-9 place-items-center rounded-full bg-white/15 text-current
+    transition-transform duration-500 ease-fluid group-hover:translate-x-0.5
+    group-hover:-translate-y-px;
+}
+.btn-ghost .btn-icon {
+  @apply bg-mint-100 text-mint-700;
+}
+
+/* Text link with a trailing arrow that nudges on hover. (`group` can't be
+   used through @apply, so the arrow is animated from this selector.) */
+.link-arrow {
+  @apply inline-flex items-center gap-2 text-[15px] font-medium text-mint-700
+    transition-colors duration-300 hover:text-mint-800;
+}
+.link-arrow svg {
+  @apply transition-transform duration-500 ease-fluid;
+}
+.link-arrow:hover svg {
+  transform: translate(2px, -2px);
+}
+
+/* ------------------------------------------------------------------
+   Type helpers used by the split-text reveals
+------------------------------------------------------------------- */
+.split-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.06em;
+}
+/* NOTE: no `will-change` here on purpose. These selectors can match several
+   hundred nodes at once; promoting all of them permanently blows up GPU layer
+   memory. GSAP sets/clears will-change per tween instead (see splitText). */
+.split-word,
+.split-char {
+  display: inline-block;
+}
+
+/* ------------------------------------------------------------------
+   Form — one bordered tray, hairline dividers between fields.
+------------------------------------------------------------------- */
+.form-tray {
+  @apply overflow-hidden rounded-[28px] border border-line bg-white;
+}
+.form-field {
+  @apply relative border-line;
+}
+.form-field input,
+.form-field textarea,
+.form-field select {
+  @apply w-full appearance-none bg-transparent px-5 py-4 text-[15px] text-ink-900
+    placeholder:text-ink-500 outline-none transition-colors duration-300;
+}
+.form-field input:focus,
+.form-field textarea:focus,
+.form-field select:focus {
+  @apply bg-mint-50/60 outline-none;
+}
+.form-field label {
+  @apply sr-only;
+}
+
+/* ------------------------------------------------------------------
+   Hero: soft mint atmosphere behind the portrait
+------------------------------------------------------------------- */
+.atmosphere {
+  background:
+    radial-gradient(58% 46% at 78% 26%, rgba(194, 235, 223, 0.85) 0%, rgba(234, 246, 242, 0) 62%),
+    radial-gradient(42% 38% at 12% 8%, rgba(226, 246, 239, 0.9) 0%, rgba(255, 255, 255, 0) 70%),
+    linear-gradient(180deg, #ffffff 0%, #f6fbf9 62%, #ffffff 100%);
+}
+.dot-grid {
+  background-image: radial-gradient(rgba(22, 118, 99, 0.18) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+
 /* ---- reduced motion ---- */
 @media (prefers-reduced-motion: reduce) {
-  .grain::after { animation: none; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Reference composition: a still portrait, quiet mint accents, no render loop. */
+html { scroll-behavior: smooth; scroll-padding-top: 92px; }
+.reference-hero { position: relative; overflow: hidden; padding-top: 84px; border-bottom: 1px solid #e4eeeb; background: #fcfefd; }
+.reference-hero .shell { max-width: 1480px; }
+.hero-layout { display: grid; grid-template-columns: 1fr 1.15fr; align-items: center; min-height: 600px; position: relative; }
+.hero-copy { z-index: 2; padding: 55px 0 48px; }
+.hero-greeting { color: #268d7f; font-size: 18px; font-weight: 700; }
+.hero-heading { margin-top: 17px; font-family: 'Satoshi', Arial, sans-serif; font-size: clamp(36px, 3.65vw, 59px); font-weight: 700; line-height: 1.12; letter-spacing: -.035em; color: #0b141d; }
+.hero-heading > span { display: block; }
+.hero-accent { color: #299b8c; }
+.hero-description { max-width: 470px; margin-top: 23px; font-size: 16px; line-height: 1.65; color: #56616f; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 26px; }
+.hero-button { display: inline-flex; align-items: center; justify-content: center; gap: 20px; padding: 14px 29px; border-radius: 999px; font-size: 14px; font-weight: 700; transition: background-color .2s, transform .2s; }
+.hero-button:hover { transform: translateY(-2px); }
+.hero-button-primary { background: #299b8c; color: white; }
+.hero-button-primary:hover { background: #207d71; }
+.hero-button-secondary { border: 1px solid #cfe6e1; color: #1c2834; }
+.hero-button-secondary:hover { background: #eaf6f2; }
+.hero-button-secondary svg { color: #299b8c; }
+.hero-proof { display: flex; align-items: center; gap: 17px; margin-top: 32px; }
+.hero-stack { display: flex; padding-right: 20px; border-right: 1px solid #d9e9e5; }
+.hero-stack span { display: grid; place-items: center; width: 40px; height: 40px; margin-left: -7px; border: 2px solid #fcfefd; border-radius: 50%; font-size: 12px; font-weight: 700; background: #dbefea; color: #216f63; }
+.hero-stack span:first-child { margin-left: 0; }
+.hero-stack span:nth-child(even) { background: #2c8e7f; color: white; }
+.hero-globe { width: 23px; height: 23px; color: #52aa9b; }
+.hero-proof p { font-size: 13px; color: #65707e; line-height: 1.6; }
+.hero-visual { position: relative; height: 600px; align-self: end; min-width: 0; }
+.hero-portrait { position: absolute; height: 650px; width: auto; max-width: none; bottom: -30px; left: 42%; transform: translateX(-50%); mix-blend-mode: multiply; mask-image: linear-gradient(to bottom, transparent, black 8%), linear-gradient(to right, transparent, black 8%, black 92%, transparent); mask-composite: intersect; }
+.hero-echo { position: absolute; width: 620px; max-width: none; height: 600px; object-fit: cover; right: -380px; bottom: 0; opacity: .045; mix-blend-mode: multiply; pointer-events: none; }
+.hero-developer-card, .hero-experience-card { position: absolute; z-index: 2; background: rgba(255,255,255,.96); border: 1px solid #e8f2ef; border-radius: 16px; box-shadow: 0 12px 35px rgba(35,123,105,.06); }
+.hero-developer-card { display: flex; align-items: center; gap: 15px; right: -6px; top: 130px; padding: 20px 24px 20px 18px; }
+.hero-code-icon { display: grid; place-items: center; width: 44px; height: 44px; background: #e0f3ef; border-radius: 50%; color: #299b8c; font-size: 23px; font-weight: 700; }
+.hero-developer-card strong { font-size: 14px; color: #1e2833; }
+.hero-developer-card p { margin-top: 8px; font-size: 12px; color: #687381; }
+.hero-status { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #299b8c; top: 15px; right: 15px; }
+.hero-experience-card { right: 4px; bottom: 86px; padding: 21px 23px; min-width: 148px; }
+.hero-experience-card svg { width: 27px; height: 27px; color: #299b8c; }
+.hero-experience-card strong { display: block; margin-top: 10px; font-size: 42px; line-height: 1.1; color: #299b8c; }
+.hero-experience-card p { margin-top: 5px; font-size: 17px; font-weight: 500; line-height: 1.4; color: #4a5564; }
+.hero-dots { position: absolute; right: 25px; bottom: 24px; width: 80px; height: 60px; background-image: radial-gradient(#cde8e1 1.4px, transparent 1.4px); background-size: 14px 14px; }
+#work { padding-top: 32px; }
+@media (min-width: 1024px) { .reference-hero .hero-copy { margin-right: -35px; } }
+@media (max-width: 1100px) and (min-width: 768px) {
+  .hero-layout { grid-template-columns: 1.05fr 1fr; }
+  .hero-heading { font-size: 39px; }
+  .hero-portrait { height: 570px; left: 40%; }
+  .hero-developer-card { top: 110px; right: -15px; padding: 14px; gap: 8px; }
+  .hero-developer-card strong { font-size: 12px; }
+  .hero-developer-card p { font-size: 10px; }
+  .hero-experience-card { right: -10px; bottom: 55px; min-width: 120px; padding: 16px; }
+}
+@media (max-width: 767px) {
+  .reference-hero { padding-top: 76px; }
+  .hero-layout { grid-template-columns: 1fr; }
+  .hero-copy { padding: 35px 0 15px; }
+  .hero-greeting { font-size: 16px; }
+  .hero-heading { font-size: clamp(32px, 6.7vw, 48px); }
+  .hero-description { font-size: 15px; max-width: 520px; }
+  .hero-actions { gap: 12px; }
+  .hero-button { padding: 13px 22px; gap: 12px; }
+  .hero-proof { margin-top: 26px; gap: 12px; }
+  .hero-visual { width: 100%; max-width: 580px; height: 470px; margin: 0 auto; }
+  .hero-portrait { height: 510px; left: 45%; bottom: -22px; }
+  .hero-developer-card { right: 0; top: 12px; gap: 8px; padding: 12px; }
+  .hero-code-icon { width: 32px; height: 32px; font-size: 19px; }
+  .hero-developer-card strong { font-size: 11px; }
+  .hero-developer-card p { font-size: 9px; margin-top: 4px; }
+  .hero-status { top: 8px; right: 8px; width: 4px; height: 4px; }
+  .hero-experience-card { right: 0; bottom: 40px; min-width: 103px; padding: 14px; }
+  .hero-experience-card strong { font-size: 32px; }
+  .hero-experience-card p { font-size: 13px; }
+  .hero-experience-card svg { width: 22px; height: 22px; }
+  .hero-dots, .hero-echo { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+.project-dialog { width: min(768px, calc(100% - 32px)); max-height: calc(100dvh - 48px); padding: 0; border: 1px solid #e4eeeb; border-radius: 28px; overscroll-behavior: contain; color: #0a1d19; }
+.project-dialog::backdrop { background: rgba(4,18,15,.65); }
+
+
+
+@media (max-width: 380px) {
+  .hero-stack { padding-right: 12px; flex-shrink: 0; }
+  .hero-stack span { width: 32px; height: 32px; font-size: 10px; }
+  .hero-proof { gap: 10px; }
+  .hero-globe { width: 20px; height: 20px; flex-shrink: 0; }
+  .hero-proof p { font-size: 12px; }
 }

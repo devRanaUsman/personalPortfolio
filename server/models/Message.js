@@ -11,6 +11,7 @@ const messageSchema = new mongoose.Schema(
       maxlength: 254,
       match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Invalid email address'],
     },
+    projectType: { type: String, trim: true, maxlength: 60, default: '' },
     message: { type: String, required: true, trim: true, maxlength: 5000 },
   },
   { timestamps: true }

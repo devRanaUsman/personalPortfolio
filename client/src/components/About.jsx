@@ -12,31 +12,31 @@ export default function About() {
 
   useGSAP(
     () => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
       const words = splitText(root.current.querySelector('.about-lede'), 'words')
       gsap.from(words, {
         yPercent: 110,
         opacity: 0,
-        duration: 0.8,
+        duration: 0.7,
         ease: 'power3.out',
-        stagger: 0.02,
-        scrollTrigger: { trigger: root.current, start: 'top 70%' },
+        stagger: 0.015,
+        scrollTrigger: { trigger: root.current, start: 'top 72%' },
         onStart: () => hintWillChange(words),
         onComplete: () => clearWillChange(words),
       })
 
-      /* Counters */
+      /* Counters. Writing textContent every tick dirties layout on a
+         display-size number, so skip the write when the string is unchanged. */
       gsap.utils.toArray('.stat-num').forEach((el) => {
         const target = parseFloat(el.dataset.value)
         const decimals = parseInt(el.dataset.decimals || '0', 10)
         const obj = { v: 0 }
-        /* Writing textContent every tick dirties layout on a huge display-size
-           number. Skip the write when the rendered string has not changed. */
         let printed = null
         gsap.to(obj, {
           v: target,
-          duration: 1.8,
+          duration: 1.6,
           ease: 'power2.out',
-          scrollTrigger: { trigger: el, start: 'top 85%' },
+          scrollTrigger: { trigger: el, start: 'top 88%' },
           onUpdate: () => {
             const next = obj.v.toFixed(decimals)
             if (next !== printed) {
@@ -49,49 +49,70 @@ export default function About() {
 
       gsap.from('.stat-cell', {
         opacity: 0,
-        y: 40,
-        duration: 0.8,
-        stagger: 0.1,
+        y: 28,
+        duration: 0.7,
+        stagger: 0.08,
         ease: 'power3.out',
-        scrollTrigger: { trigger: '.stat-grid', start: 'top 85%' },
+        scrollTrigger: { trigger: '.stat-tray', start: 'top 88%' },
       })
     },
     { scope: root }
   )
 
   return (
-    <section id="about" ref={root} className="section-pad">
-      <div className="grid md:grid-cols-12 gap-10">
-        <div className="md:col-span-3">
-          <p className="eyebrow">About</p>
-        </div>
-        <div className="md:col-span-9">
-          <h2 className="about-lede font-display font-medium tracking-tightest text-3xl md:text-5xl leading-tight max-w-4xl">
-            Most teams hire two people for this. A web engineer to ship the
-            product, and a data scientist to make it smart. I close that gap —
-            the model and the interface are designed together, so neither is an
-            afterthought.
-          </h2>
-          <p className="mt-8 max-w-xl text-bone-300 leading-relaxed">
-            Based in {profile.location}. Six years across agencies, an
-            analytics firm, and independent consulting — always at the seam
-            where production software meets applied machine learning.
-          </p>
-        </div>
-      </div>
-
-      <div className="stat-grid mt-24 grid grid-cols-2 md:grid-cols-4 border-t border-ink-700">
-        {stats.map((s) => (
-          <div key={s.label} className="stat-cell py-10 pr-6 border-b md:border-b-0 border-ink-800">
-            <p className="font-display text-5xl md:text-6xl tracking-tightest text-bone-100">
-              <span className="stat-num" data-value={s.value} data-decimals={s.decimals || 0}>
-                0
-              </span>
-              <span className="text-gold-500">{s.suffix}</span>
+    <section id="about" ref={root} className="section-pad bg-white pt-4 md:pt-6">
+      <div className="shell">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-16">
+          <div>
+            <p className="eyebrow">About</p>
+            <h2 className="mt-4 font-display text-[30px] font-semibold leading-tight tracking-tightest text-ink-900 sm:text-[34px]">
+              Two disciplines, one pipeline.
+            </h2>
+            <p className="about-lede mt-6 max-w-[44ch] font-display text-[22px] leading-[1.45] tracking-tightest text-ink-800 sm:text-[26px]">
+              Most teams hire two people for this. A web engineer to ship the
+              product, and a data scientist to make it smart. I close that gap —
+              the model and the interface are designed together.
             </p>
-            <p className="mt-3 text-sm text-bone-500">{s.label}</p>
           </div>
-        ))}
+
+          <div className="lg:pt-4">
+            <p className="max-w-[46ch] leading-relaxed text-ink-500">
+              Based in {profile.location}. Six years across agencies, an
+              analytics firm, and independent consulting — always at the seam
+              where production software meets applied machine learning.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-x-8 gap-y-4">
+              {profile.socials.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="link-arrow"
+                >
+                  {s.label}
+                  <span aria-hidden="true">↗</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="stat-tray shell-card mt-14">
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+            {stats.map((s) => (
+              <div key={s.label} className="stat-cell rounded-[24px] border border-line bg-white p-6 shadow-soft">
+                <p className="font-display text-[38px] leading-none tracking-tightest text-ink-900 sm:text-[44px]">
+                  <span className="stat-num" data-value={s.value} data-decimals={s.decimals || 0}>
+                    {s.value}
+                  </span>
+                  <span className="text-mint-500">{s.suffix}</span>
+                </p>
+                <p className="mt-3 text-[13.5px] leading-snug text-ink-500">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   )
